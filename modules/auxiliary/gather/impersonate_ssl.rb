@@ -60,13 +60,13 @@ class Metasploit3 < Msf::Auxiliary
 		vprint_status("Original Certifcate Details\n\n#{cert.to_text}")
 
 		begin
-			keylength = /Modulus \((\d+) bit\)/i.match(cert.to_text)[1] # Grab keylength from target cert
+			keylength = /Key: \((\d+)/i.match(cert.signature_algorithm)[1] # Grab keylength from target cert
 		rescue
 			keylength = 1024
 		end
 
 		begin
-			hashtype = /Signature Algorithm: (\w+)With/i.match(cert.to_text)[1] # Grab hashtype from target cert
+			hashtype = /Algorithm: (\w+)With/i.match(cert.to_text)[1] # Grab hashtype from target cert
 		rescue
 			hashtype = 'sha1'
 		end
