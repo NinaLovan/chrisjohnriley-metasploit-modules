@@ -136,4 +136,4 @@ class Metasploit3 < Msf::Auxiliary
 		print_good("Files stored in ~/.msf3/loot (.key|.crt|.pem)")
 
 	end
-end
+endaa
