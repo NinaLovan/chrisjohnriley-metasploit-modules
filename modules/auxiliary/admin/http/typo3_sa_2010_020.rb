@@ -19,10 +19,10 @@ class Metasploit3 < Msf::Auxiliary
 
 	def initialize
 		super(
-			'Name'			=> 'Typo3 sa-2010-020 Remote File Disclosure',
+			'Name'			=> 'TYPO3 sa-2010-020 Remote File Disclosure',
 			'Version'		=> '$Revision$',
 			'Description'	=> %q{
-				This module exploits a flaw in the way the Typo3 jumpurl feature matches hashes.
+				This module exploits a flaw in the way the TYPO3 jumpurl feature matches hashes.
 				Due to this flaw a Remote File Disclosure is possible by matching the juhash of 0.
 				This flaw can be used to read any file that the web server user account has access to view.
 			},
@@ -44,7 +44,7 @@ class Metasploit3 < Msf::Auxiliary
 
 		register_options(
 			[
-				OptString.new('URI', [true, "Typo3 Path", "/"]),
+				OptString.new('URI', [true, "TYPO3 Path", "/"]),
 				OptString.new('RFILE', [true, "The remote file to download", 'typo3conf/localconf.php']),
 				OptInt.new('MAX_TRIES', [true, "Maximum tries", 10000]),
 
@@ -54,7 +54,7 @@ class Metasploit3 < Msf::Auxiliary
 
 	def run
 
-	# Add padding to bypass Typo3 security filters
+	# Add padding to bypass TYPO3 security filters
 	#
 	# Null byte fixed in PHP 5.3.4
 	#
@@ -108,8 +108,8 @@ class Metasploit3 < Msf::Auxiliary
 				},25)
 
 		rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
-		rescue ::Timeout::Error, ::Errno::EPIPE
-
+		rescue ::Timeout::Error, ::Errno::EPIPE => e
+			print_error(e.message)
 		end
 
 		if ((counter.to_f/queue.length.to_f)*100.0).to_s =~ /\d0.0$/ # Display percentage complete every 10%

