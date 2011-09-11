@@ -27,6 +27,8 @@ class Metasploit3 < Msf::Auxiliary
 					(self.signed) version using the information from the remote version.
 					The module then Outputs (PEM|DER) format private key / certificate and a
 					combined version for use in Apache or other Metasploit modules requiring SSLCert
+					Inputs for private key / CA cert have been provided for those with diginator certs
+					hanging about!
 			}
 		)
 
@@ -35,12 +37,29 @@ class Metasploit3 < Msf::Auxiliary
 				Opt::RPORT(443),
 				OptString.new('OUT_FORMAT', [true, "Output format PEM / DER", 'PEM']),
 				OptString.new('EXPIRATION', [false, "Date the new cert should expire (e.g. 06 May 2012, Yesterday or Now)", '']),
+				OptString.new('PRIVKEY', [false, "Sign the cert with your own CA private key ;)", '']),
+				OptString.new('PRIVKEY_PASSWORD', [false, "Password for private key specified in PRIV_KEY (if applicable)", '']),
+				OptString.new('CA_CERT', [false, "CA Public certificate", '']),
+				OptString.new('ADD_CN', [false, "Add CN to match spoofed site name", '']),
 			], self.class)
 	end
 
 	def run
 
 		print_status("Connecting to #{rhost}:#{rport}")
+
+		if (datastore['PRIVKEY'] != '' and datastore['CA_CERT'] != '')
+			print_status("Signing generated certificate with provided KEY and CA Certificate")
+			if datastore['PRIVKEY_PASSWORD'] != ''
+				ca_key = OpenSSL::PKey::RSA.new(File.read(datastore['PRIVKEY']), datastore['PRIVKEY_PASSWORD'])
+			else
+				ca_key = OpenSSL::PKey::RSA.new(File.read(datastore['PRIVKEY']))
+			end
+			ca = OpenSSL::X509::Certificate.new(File.read(datastore['CA_CERT']))
+		elsif (datastore['PRIVKEY'] != '' or datastore['CA_CERT'] != '')
+			print_error("CA Certificate AND Private Key must be provided!")
+			return
+		end
 
 		begin
 			connect
@@ -71,26 +90,41 @@ class Metasploit3 < Msf::Auxiliary
 			hashtype = 'sha1'
 		end
 
-		new_key = OpenSSL::PKey::RSA.new(keylength.to_i)
 		new_cert = OpenSSL::X509::Certificate.new
-
-		new_cert.public_key = new_key.public_key
 		ef = OpenSSL::X509::ExtensionFactory.new(nil,new_cert)
 
+		# Duplicate information from the remote certificate
+		entries = ['version','serial', 'subject', 'not_before','not_after']
+		entries.each do | ent |
+			eval("new_cert.#{ent} = cert.#{ent}")
+		end
+
+		if datastore['PRIVKEY'] != ''
+			#new_key = OpenSSL::PKey::RSA.new(keylength.to_i)
+			new_cert.public_key = ca_key.public_key
+			ef.issuer_certificate = ca
+			new_cert.issuer = ca.subject
+			print_status("Using private key #{datastore['PRIVKEY']}")
+		else
+			new_key = OpenSSL::PKey::RSA.new(keylength.to_i)
+			new_cert.public_key = new_key.public_key
+			ef.issuer_certificate = new_cert
+			new_cert.issuer = cert.issuer
+		end
+
+		if datastore['ADD_CN'] != ''
+			new_cert.subject = OpenSSL::X509::Name.new(new_cert.subject.to_a << ["CN", "#{datastore['ADD_CN']}"])
+			print_status("Adding #{datastore['ADD_CN']} to the end of the certificate subject")
+			vprint_status("Certificate Subject: #{new_cert.subject}")
+		end
+
+		ef.subject_certificate = new_cert
 		new_cert.extensions = [
 			ef.create_extension("basicConstraints","CA:FALSE"),
 			ef.create_extension("subjectKeyIdentifier","hash"),
 			ef.create_extension("extendedKeyUsage","critical,serverAuth"),
-			ef.create_extension("keyUsage", "keyEncipherment,dataEncipherment,digitalSignature")
+			ef.create_extension("keyUsage", "nonRepudiation,keyEncipherment,dataEncipherment,digitalSignature"),
 		]
-
-		ef.issuer_certificate = new_cert
-
-		# Duplicate information from the remote certificate
-		entries = ['version','serial','subject','issuer','not_before','not_after']
-		entries.each do | ent |
-			eval("new_cert.#{ent} = cert.#{ent}")
-		end
 
 		if datastore['EXPIRATION'] != ''
 			print_status("Altering certificate expiry information to #{datastore['EXPIRATION']}")
@@ -113,13 +147,19 @@ class Metasploit3 < Msf::Auxiliary
 
 		# Alter serial to avoid duplicate issuer/serial detection
 		if (cert.serial.to_s.length > 1)
-			new_cert.serial = (cert.serial.to_s[0..-3] + cert.serial.to_s[-1] + cert.serial.to_s[-2]).to_i
+			new_cert.serial = (cert.serial.to_s[0..-2] + rand(0xFF).to_s).to_i
 		else
-			new_cert.serial = rand(0xFF)
+			new_cert.serial = rand(0xFFFF)
 		end
 
 		new_cert.add_extension(ef.create_extension("authorityKeyIdentifier","critical,keyid:always,issuer:always"))
-		new_cert.sign(new_key, eval("OpenSSL::Digest::#{hashtype.upcase}.new"))
+
+		if datastore['PRIVKEY'] != ''
+			new_cert.sign(ca_key, eval("OpenSSL::Digest::#{hashtype.upcase}.new"))
+			new_key = ca_key # Set for file output
+		else
+			new_cert.sign(new_key, eval("OpenSSL::Digest::#{hashtype.upcase}.new"))
+		end
 
 		vprint_status("Duplicate Certificate Details\n\n#{new_cert.to_text}")
 		print_status("Beginning export of certificate files")
