@@ -62,10 +62,10 @@ class Metasploit4 < Msf::Auxiliary
 		end
 
 		begin
-			connect
+			connect(true, {"SSL" => true}) # Force SSL even for RPORT != 443
 			cert  = OpenSSL::X509::Certificate.new(sock.peer_cert) # Get certificate from remote rhost
 			disconnect
-		rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
+		rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout => e
 		rescue ::Timeout::Error, ::Errno::EPIPE => e
 			print_error(e.message)
 		end
