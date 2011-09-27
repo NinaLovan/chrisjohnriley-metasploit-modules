@@ -40,7 +40,7 @@ class Metasploit4 < Msf::Auxiliary
 				OptString.new('PRIVKEY', [false, "Sign the cert with your own CA private key ;)", '']),
 				OptString.new('PRIVKEY_PASSWORD', [false, "Password for private key specified in PRIV_KEY (if applicable)", '']),
 				OptString.new('CA_CERT', [false, "CA Public certificate", '']),
-				OptString.new('ADD_CN', [false, "Add CN to match spoofed site name", '']),
+				OptString.new('ADD_CN', [false, "Add CN to match spoofed site name (e.g. *.example.com)", '']),
 			], self.class)
 	end
 
@@ -130,7 +130,7 @@ class Metasploit4 < Msf::Auxiliary
 		else
 			new_cert.serial = rand(0xFFFF)
 		end
-		
+
 		if datastore['PRIVKEY'] != ''
 			new_cert.public_key = ca_key.public_key
 			ef.subject_certificate = ca
@@ -150,11 +150,8 @@ class Metasploit4 < Msf::Auxiliary
 		end
 
 		new_cert.extensions = [
-			ef.create_extension("basicConstraints","CA:TRUE", true),
+			ef.create_extension("basicConstraints","CA:FALSE", true),
 			ef.create_extension("subjectKeyIdentifier","hash"),
-			#ef.create_extension("authorityKeyIdentifier", "keyid,issuer")
-			#ef.create_extension("extendedKeyUsage","critical,serverAuth"),
-			#ef.create_extension("keyUsage", "nonRepudiation,keyEncipherment,dataEncipherment,digitalSignature"),
 		]
 
 		if datastore['PRIVKEY'] != ''
