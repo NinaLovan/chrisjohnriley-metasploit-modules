@@ -11,7 +11,7 @@
 
 require 'msf/core'
 
-class Metasploit3 < Msf::Auxiliary
+class Metasploit4 < Msf::Auxiliary
 
 	include Msf::Exploit::Remote::HttpClient
 	include Msf::Auxiliary::Report
@@ -140,10 +140,10 @@ class Metasploit3 < Msf::Auxiliary
 			env.each do |output|
 				saptbl << [ output[0], output[1], output[2], output[3], output[4] ]
 			end
-			
+
 			store_loot("sap.getaccesspointlist", "text/xml", rhost, res.body, ".xml")
 
-			print(saptbl.to_s)				
+			print_status(saptbl.to_s)
 			return
 
 		elsif fault
