@@ -99,33 +99,11 @@ class Metasploit4 < Msf::Auxiliary
 			eval("new_cert.#{ent} = cert.#{ent}")
 		end
 
-		if datastore['PRIVKEY'] != ''
-			new_cert.public_key = ca_key.public_key
-			ef.issuer_certificate = ca
-			ef.subject_certificate = ca
-			new_cert.issuer = ca.subject
-			print_status("Using private key #{datastore['PRIVKEY']}")
-		else
-			new_key = OpenSSL::PKey::RSA.new(keylength.to_i)
-			new_cert.public_key = new_key.public_key
-			ef.issuer_certificate = new_cert
-			ef.subject_certificate = new_cert
-			new_cert.issuer = cert.subject
-		end
-
 		if datastore['ADD_CN'] != ''
 			new_cert.subject = OpenSSL::X509::Name.new(new_cert.subject.to_a << ["CN", "#{datastore['ADD_CN']}"])
 			print_status("Adding #{datastore['ADD_CN']} to the end of the certificate subject")
 			vprint_status("Certificate Subject: #{new_cert.subject}")
 		end
-
-		new_cert.extensions = [
-			ef.create_extension("basicConstraints","CA:TRUE", true),
-			ef.create_extension("subjectKeyIdentifier","hash"),
-			#ef.create_extension("authorityKeyIdentifier", "keyid,issuer")
-			#ef.create_extension("extendedKeyUsage","critical,serverAuth"),
-			#ef.create_extension("keyUsage", "nonRepudiation,keyEncipherment,dataEncipherment,digitalSignature"),
-		]
 
 		if datastore['EXPIRATION'] != ''
 			print_status("Altering certificate expiry information to #{datastore['EXPIRATION']}")
@@ -152,6 +130,32 @@ class Metasploit4 < Msf::Auxiliary
 		else
 			new_cert.serial = rand(0xFFFF)
 		end
+		
+		if datastore['PRIVKEY'] != ''
+			new_cert.public_key = ca_key.public_key
+			ef.subject_certificate = ca
+			ef.issuer_certificate = ca
+			new_cert.issuer = ca.subject
+			print_status("Using private key #{datastore['PRIVKEY']}")
+		else
+			new_key = OpenSSL::PKey::RSA.new(keylength.to_i)
+			new_cert.public_key = new_key.public_key
+			ef.subject_certificate = new_cert
+			ef.issuer_certificate = new_cert
+			if datastore['ADD_CN'] != ''
+				new_cert.issuer = new_cert.subject
+			else
+				new_cert.issuer = cert.subject
+			end
+		end
+
+		new_cert.extensions = [
+			ef.create_extension("basicConstraints","CA:TRUE", true),
+			ef.create_extension("subjectKeyIdentifier","hash"),
+			#ef.create_extension("authorityKeyIdentifier", "keyid,issuer")
+			#ef.create_extension("extendedKeyUsage","critical,serverAuth"),
+			#ef.create_extension("keyUsage", "nonRepudiation,keyEncipherment,dataEncipherment,digitalSignature"),
+		]
 
 		if datastore['PRIVKEY'] != ''
 			new_cert.sign(ca_key, eval("OpenSSL::Digest::#{hashtype.upcase}.new"))
@@ -169,9 +173,9 @@ class Metasploit4 < Msf::Auxiliary
 
 		addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
 
-		store_loot("priv_key.key", datastore['OUT_FORMAT'].downcase, addr, priv_key, "imp_ssl.key", "Impersonate_SSL")
-		store_loot("cert_crt.crt", datastore['OUT_FORMAT'].downcase, addr, cert_crt, "imp_ssl.crt", "Impersonate_SSL")
-		store_loot("combined.pem", "pem", addr, combined, "imp_ssl.pem", "Impersonate_SSL")
+		store_loot("#{datastore['RHOST'].downcase}_key", datastore['OUT_FORMAT'].downcase, addr, priv_key, "imp_ssl.key", "Impersonate_SSL")
+		store_loot("#{datastore['RHOST'].downcase}_cert", datastore['OUT_FORMAT'].downcase, addr, cert_crt, "imp_ssl.crt", "Impersonate_SSL")
+		store_loot("#{datastore['RHOST'].downcase}_pem", "pem", addr, combined, "imp_ssl.pem", "Impersonate_SSL")
 
 		print_good("Created required files from remote server #{rhost}:#{rport}")
 		print_good("Files stored in ~/.msf4/loot (.key|.crt|.pem)")
