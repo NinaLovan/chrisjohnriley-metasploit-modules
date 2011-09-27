@@ -11,7 +11,7 @@
 
 require 'msf/core'
 
-class Metasploit3 < Msf::Auxiliary
+class Metasploit4 < Msf::Auxiliary
 
 	include Msf::Exploit::Remote::HttpClient
 	include Msf::Auxiliary::Report
@@ -119,7 +119,7 @@ class Metasploit3 < Msf::Auxiliary
 		if success
 			print_good("#{rhost}:#{rport} [SAP] Process Parameters: Entries extracted to loot")
 			store_loot("sap.getprocessparameters", "text/xml", rhost, res.body, ".xml")
-						
+
 			saptbl = Msf::Ui::Console::Table.new(
 				Msf::Ui::Console::Table::Style::Default,
 			'Header'    => "[SAP] Process Parameters #{rhost}:#{rport}",
@@ -137,7 +137,7 @@ class Metasploit3 < Msf::Auxiliary
 				saptbl << [ output[0], output[1], output[2] ]
 			end
 
-			print(saptbl.to_s)
+			print_status(saptbl.to_s)
 			return
 
 		elsif fault
