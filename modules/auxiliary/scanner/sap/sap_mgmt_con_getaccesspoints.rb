@@ -55,7 +55,11 @@ class Metasploit4 < Msf::Auxiliary
 					'User-Agent' => datastore['UserAgent']
 				}
 		}, 25)
-		return if not res
+		
+		if not res
+			print_error("#{rhost}:#{rport} [SAP] Unable to connect")
+			return
+		end
 
 		getacesspoints(ip)
 	end
@@ -141,7 +145,8 @@ class Metasploit4 < Msf::Auxiliary
 				saptbl << [ output[0], output[1], output[2], output[3], output[4] ]
 			end
 
-			store_loot("sap.getaccesspointlist", "text/xml", rhost, res.body, ".xml")
+			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
+			store_loot("sap.getaccesspointlist", "text/xml", addr, res.body, ".xml")
 
 			print_status(saptbl.to_s)
 			return

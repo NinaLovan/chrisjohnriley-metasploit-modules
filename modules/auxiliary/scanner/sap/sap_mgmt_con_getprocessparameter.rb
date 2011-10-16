@@ -55,7 +55,11 @@ class Metasploit4 < Msf::Auxiliary
 					'User-Agent' => datastore['UserAgent']
 				}
 		}, 25)
-		return if not res
+		
+		if not res
+			print_error("#{rhost}:#{rport} [SAP] Unable to connect")
+			return
+		end
 
 		getprocparam(ip)
 	end
@@ -118,7 +122,8 @@ class Metasploit4 < Msf::Auxiliary
 
 		if success
 			print_good("#{rhost}:#{rport} [SAP] Process Parameters: Entries extracted to loot")
-			store_loot("sap.getprocessparameters", "text/xml", rhost, res.body, ".xml")
+			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
+			store_loot("sap.getprocessparameters", "text/xml", addr, res.body, ".xml")
 
 			saptbl = Msf::Ui::Console::Table.new(
 				Msf::Ui::Console::Table::Style::Default,

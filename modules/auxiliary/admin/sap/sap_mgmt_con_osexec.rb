@@ -43,7 +43,6 @@ class Metasploit4 < Msf::Auxiliary
 				OptBool.new('UseWindows', [false, 'Use Windows syntax for command "cmd /c"', true]),
 			], self.class)
 		register_autofilter_ports([ 50013 ])
-		deregister_options('RHOST', 'USERNAME', 'PASSWORD')
 	end
 
 	def rport
@@ -56,13 +55,16 @@ class Metasploit4 < Msf::Auxiliary
 			'method'  => 'GET',
 			'headers' => {'User-Agent' => datastore['UserAgent']}
 		}, 25)
-		return if not res
+	   	if not res
+			print_error("#{rhost}:#{rport} [SAP] Unable to connect")
+			return
+		end
 
 		osexecute(ip)
 	end
 
 	def osexecute(rhost)
-		verbose = datastore['VERBOSE']
+
 		print_status("[SAP] Connecting to SAP Management Console SOAP Interface on #{rhost}:#{rport}")
 		success = false
 
