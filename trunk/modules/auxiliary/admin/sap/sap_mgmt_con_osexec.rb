@@ -158,7 +158,7 @@ class Metasploit4 < Msf::Auxiliary
 			print_status(saptbl.to_s)
 
 		elsif fault
-			print_error("#{rhost}:#{rhost} [SAP] Errorcode: #{faultcode}")
+			print_error("#{rhost}:#{rhost} [SAP] Error code: #{faultcode}")
 			return
 		else
 			print_error("#{rhost}:#{rhost} [SAP] failed to run command")

@@ -55,7 +55,7 @@ class Metasploit4 < Msf::Auxiliary
 					'User-Agent' => datastore['UserAgent']
 				}
 		}, 25)
-		
+
 		if not res
 			print_error("#{rhost}:#{rport} [SAP] Unable to connect")
 			return
@@ -152,7 +152,7 @@ class Metasploit4 < Msf::Auxiliary
 			return
 
 		elsif fault
-			print_error("#{rhost}:#{rport} [SAP] Errorcode: #{faultcode}")
+			print_error("#{rhost}:#{rport} [SAP] Error code: #{faultcode}")
 			return
 
 		else
