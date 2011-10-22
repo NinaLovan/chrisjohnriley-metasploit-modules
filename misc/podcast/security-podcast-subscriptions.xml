@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+    <head>
+        <title>Chris subscriptions in Google Reader</title>
+    </head>
+    <body>
+        <outline text="AuditCasts with David Hoelzer"
+            title="AuditCasts with David Hoelzer" type="rss"
+            xmlUrl="http://feeds.feedburner.com/AuditcastsWithDavidHoelzer" htmlUrl="http://auditcasts.com/"/>
+        <outline text="Down the Security Rabbithole"
+            title="Down the Security Rabbithole" type="rss"
+            xmlUrl="http://podcast.wh1t3rabbit.net/rss" htmlUrl="http://hp.com/go/white-rabbit"/>
+        <outline text="The Risk Hose Podcast"
+            title="The Risk Hose Podcast" type="rss"
+            xmlUrl="http://feeds.feedburner.com/posterous/jhtP" htmlUrl="http://riskhose.com"/>
+        <outline text="Uploads by InfosecCynic"
+            title="Uploads by InfosecCynic" type="rss"
+            xmlUrl="http://gdata.youtube.com/feeds/base/users/InfosecCynic/uploads?alt=rss" htmlUrl="http://www.youtube.com/profile?user=InfosecCynic#p/u"/>
+        <outline title="Listen Subscriptions" text="Listen Subscriptions">
+            <outline text="Black Hat Webcasts RSS Feed"
+                title="Black Hat Webcasts RSS Feed" type="rss"
+                xmlUrl="http://www.blackhat.com/BlackHat-webcasts.xml" htmlUrl="https://www.blackhat.com"/>
+            <outline text="Blue Box: The VoIP Security Podcast"
+                title="Blue Box: The VoIP Security Podcast" type="rss"
+                xmlUrl="http://feeds.feedburner.com/BlueBox" htmlUrl="http://www.blueboxpodcast.com/"/>
+            <outline text="Crypto-Gram Security Podcast"
+                title="Crypto-Gram Security Podcast" type="rss"
+                xmlUrl="http://crypto-gram.libsyn.com/rss" htmlUrl="http://crypto-gram.libsyn.com"/>
+            <outline text="Dennis Fisher's Threatpost Podcast Feed"
+                title="Dennis Fisher's Threatpost Podcast Feed"
+                type="rss"
+                xmlUrl="http://threatpost.com/en_us/feeds/blog/hearsay/digitalunderground.xml" htmlUrl="http://threatpost.com/en_us/feeds/blog/hearsay/digitalunderground.xml"/>
+            <outline text="Drum&amp;BassArena Podcast"
+                title="Drum&amp;BassArena Podcast" type="rss"
+                xmlUrl="http://www.breakbeat.co.uk/podcast/DNBArena_Podcast.xml" htmlUrl="http://breakbeat.co.uk"/>
+            <outline
+                text="Eurotrash Security Podcast: Security with funny accents"
+                title="Eurotrash Security Podcast: Security with funny accents"
+                type="rss"
+                xmlUrl="http://eurotrashsecurity.eu/episodes/eurotrash.xml" htmlUrl="http://www.eurotrashsecurity.eu"/>
+            <outline text="Exotic Liability" title="Exotic Liability"
+                type="rss"
+                xmlUrl="http://exoticliability.libsyn.com/rss" htmlUrl="http://exoticliability.libsyn.com"/>
+            <outline text="Finux Tech Weekly Podcast"
+                title="Finux Tech Weekly Podcast" type="rss"
+                xmlUrl="http://www.finux.co.uk/FTW-Podcast.xml" htmlUrl="http://www.finux.co.uk"/>
+            <outline text="FIRST Podcasts" title="FIRST Podcasts"
+                type="rss"
+                xmlUrl="http://conference.first.org/podcasts.xml" htmlUrl="http://conference.first.org"/>
+            <outline text="GRM n00bs Security Podcast"
+                title="GRM n00bs Security Podcast" type="rss"
+                xmlUrl="http://www.grmn00bs.com/category/podcasts/feed" htmlUrl="http://www.grmn00bs.com/category/podcasts"/>
+            <outline text="Hacker Public Radio"
+                title="Hacker Public Radio" type="rss"
+                xmlUrl="http://hackerpublicradio.org/hpr_rss.php" htmlUrl="http://hackerpublicradio.org/about.php"/>
+            <outline text="Immunity's Podcast:"
+                title="Immunity's Podcast:" type="rss"
+                xmlUrl="http://www.immunityinc.com/podcasts/podcast.xml" htmlUrl="http://www.immunityinc.com/"/>
+            <outline text="InfoSec Daily Podcast"
+                title="InfoSec Daily Podcast" type="rss"
+                xmlUrl="http://www.isdpodcast.com/podcasts/podcast.xml" htmlUrl="http://www.isdpodcast.com"/>
+            <outline text="Internet Storm Center Threat Update"
+                title="Internet Storm Center Threat Update" type="rss"
+                xmlUrl="http://isc.sans.org/podcast.xml" htmlUrl="http://isc.sans.edu/"/>
+            <outline text="Network Security Podcast"
+                title="Network Security Podcast" type="rss"
+                xmlUrl="http://feeds.feedburner.com/NetworkSecurityPodcast" htmlUrl="http://netsecpodcast.com"/>
+            <outline text="OWASP Security Podcast"
+                title="OWASP Security Podcast" type="rss"
+                xmlUrl="http://www.owasp.org/download/jmanico/podcast.xml" htmlUrl="https://www.owasp.org/index.php/OWASP_Podcast"/>
+            <outline text="PaulDotCom Security Weekly"
+                title="PaulDotCom Security Weekly" type="rss"
+                xmlUrl="http://pauldotcom.com/podcast/psw.xml" htmlUrl="http://pauldotcom.com/"/>
+            <outline
+                text="PaulDotCom Security Weekly TV : Hack Naked TV"
+                title="PaulDotCom Security Weekly TV : Hack Naked TV"
+                type="rss" xmlUrl="http://blip.tv/rss/bookmarks/241768" htmlUrl="http://blip.tv"/>
+            <outline text="Police-Led Intelligence Podcast"
+                title="Police-Led Intelligence Podcast" type="rss"
+                xmlUrl="http://plip.podbean.com/feed" htmlUrl="http://plip.podbean.com"/>
+            <outline text="RB2" title="RB2" type="rss"
+                xmlUrl="http://risky.biz/feeds/rb2" htmlUrl="http://risky.biz/feeds/rb2"/>
+            <outline text="Risky Business" title="Risky Business"
+                type="rss"
+                xmlUrl="http://www.google.com/m/url?ei=Om1ATaDIHJSqngPSw4UP&amp;q=http://risky.biz/feeds/risky-business&amp;ved=0CBQQFjAB&amp;usg=AFQjCNGp1VqWIXYb_T_M97IBaJ_0o-Ji5Q" htmlUrl="http://risky.biz/feeds/risky-business"/>
+            <outline text="SANS AudioCasts" title="SANS AudioCasts"
+                type="rss"
+                xmlUrl="http://www.sans.org/audiocasts/rss.xml" htmlUrl="http://www.sans.org"/>
+            <outline text="SANS Internet Storm Center StormCast"
+                title="SANS Internet Storm Center StormCast" type="rss"
+                xmlUrl="http://isc1.sans.org/dailypodcast.xml" htmlUrl="http://isc.sans.edu/podcast.html#stormcast"/>
+            <outline text="Security Justice" title="Security Justice"
+                type="rss"
+                xmlUrl="http://securityjustice.com/?feed=podcast" htmlUrl="http://securityjustice.com"/>
+            <outline text="Social Media Security"
+                title="Social Media Security" type="rss"
+                xmlUrl="http://socialmediasecurity.com/?feed=podcast" htmlUrl="http://socialmediasecurity.com"/>
+            <outline text="Social-Engineer.Org PodCast"
+                title="Social-Engineer.Org PodCast" type="rss"
+                xmlUrl="http://socialengineer.podbean.com/feed" htmlUrl="http://socialengineer.podbean.com"/>
+            <outline text="SpiderLabs Radio" title="SpiderLabs Radio"
+                type="rss"
+                xmlUrl="http://www.swiat.net/podcast/spiderlabs.xml" htmlUrl="https://www.trustwave.com/spiderLabs.php"/>
+            <outline text="TechSNAP MP3" title="TechSNAP MP3" type="rss"
+                xmlUrl="http://feeds.feedburner.com/techsnapmp3" htmlUrl="http://www.jupiterbroadcasting.com"/>
+            <outline text="The Linux Action Show! MP3"
+                title="The Linux Action Show! MP3" type="rss"
+                xmlUrl="http://feeds.feedburner.com/TheLinuxActionShow" htmlUrl="http://www.jupiterbroadcasting.com"/>
+            <outline text="The SIRA Podcast" title="The SIRA Podcast"
+                type="rss"
+                xmlUrl="http://societyinforisk.org/podcast/feed.xml" htmlUrl="http://societyinforisk.org/"/>
+            <outline text="The Southern Fried Security Podcast"
+                title="The Southern Fried Security Podcast" type="rss"
+                xmlUrl="http://sfspodcast.libsyn.com/rss" htmlUrl="http://www.southernfriedsecurity.com"/>
+        </outline>
+    </body>
+</opml>
