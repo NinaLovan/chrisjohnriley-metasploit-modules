@@ -21,7 +21,10 @@ class Metasploit4 < Msf::Auxiliary
 		super(
 			'Name'         => 'SAP Management Console Get Access Points',
 			'Version'      => '$Revision$',
-			'Description'  => %q{ This module simply attempts to output a list of SAP access points through the SAP Management Console SOAP Interface. },
+			'Description'  => %q{
+				This module simply attempts to output a list of SAP access points through the
+				SAP Management Console SOAP Interface.
+			},
 			'References'   =>
 				[
 					# General
@@ -35,8 +38,6 @@ class Metasploit4 < Msf::Auxiliary
 			[
 				Opt::RPORT(50013),
 				OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-				OptString.new('UserAgent', [ true, "The HTTP User-Agent sent in the request",
-				'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' ]),
 			], self.class)
 		register_autofilter_ports([ 50013 ])
 		deregister_options('RHOST')
@@ -75,7 +76,8 @@ class Metasploit4 < Msf::Auxiliary
 		ns1 = 'ns1:GetAccessPointList'
 
 		data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
-		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi + '" xmlns:xs="' + xs + '">' + "\r\n"
+		data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi
+		data << '" xmlns:xs="' + xs + '">' + "\r\n"
 		data << '<SOAP-ENV:Header>' + "\r\n"
 		data << '<sapsess:Session xlmns:sapsess="' + sapsess + '">' + "\r\n"
 		data << '<enableSession>true</enableSession>' + "\r\n"
@@ -145,8 +147,7 @@ class Metasploit4 < Msf::Auxiliary
 				saptbl << [ output[0], output[1], output[2], output[3], output[4] ]
 			end
 
-			addr = Rex::Socket.getaddress(rhost) # Convert rhost to ip for DB
-			store_loot("sap.getaccesspointlist", "text/xml", addr, res.body, ".xml")
+			store_loot("sap.getaccesspointlist", "text/xml", rhost, res.body, ".xml")
 
 			print_status(saptbl.to_s)
 			return
