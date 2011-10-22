@@ -132,47 +132,50 @@ class Metasploit4 < Msf::Auxiliary
 		end
 
 		if success
-			print_good("#{rhost}:#{rport} [SAP] Process Parameters: Entries extracted to loot")
-			store_loot(
-				"sap.getprocessparameters",
-				"text/xml",
-				rhost,
-				res.body,
-				".xml"
-			)
-
-			saptbl = Msf::Ui::Console::Table.new(
-				Msf::Ui::Console::Table::Style::Default,
-			'Header'    => "[SAP] Process Parameters",
-			'Prefix'  => "\n",
-			'Indent'    => 1,
-			'Columns'   =>
-			[
-				"Name",
-				"Description",
-				"Value"
-			])
-
-			if not datastore['MATCH'].empty?
+			#Only stoor loot if MATCH is not selected
+			if datastore['MATCH'].empty?
+				print_good("#{rhost}:#{rport} [SAP] Process Parameters: Entries extracted to loot")
+				store_loot(
+					"sap.getprocessparameters",
+					"text/xml",
+					rhost,
+					res.body,
+					".xml"
+				)
+			else
 				name_match = Regexp.new(datastore['MATCH'], [Regexp::EXTENDED, 'n'])
-				print_status("Attempting to display configuration matches for #{name_match}")
-			end
-			xmldata = REXML::Document.new(body)
-			xmlpath = '/SOAP-ENV:Envelope/SOAP-ENV:Body/'
-			xmlpath << '/SAPControl:GetProcessParameterResponse'
-			xmlpath << '/parameter/item'
-			xmldata.elements.each(xmlpath) do | ele |
-				if not datastore['MATCH'].empty? and ele.elements["name"].text.match(/#{name_match}/)
-					name = ele.elements["name"].text if not ele.elements["name"].nil?
-					desc = ele.elements["description"].text if not ele.elements["description"].nil?
-					desc = '' if desc.nil?
-					val = ele.elements["value"].text if not ele.elements["value"].nil?
-					val = '' if val.nil?
-					saptbl << [ name, desc, val ]
-				end
-			end
+				print_status("[SAP] Regex match selected, skipping loot storage")
+				print_status("#{rhost}:#{rport} [SAP] Attempting to display configuration matches for #{name_match}")
 
-			print_status(saptbl.to_s) if not saptbl.to_s.empty?
+				saptbl = Msf::Ui::Console::Table.new(
+					Msf::Ui::Console::Table::Style::Default,
+				'Header'    => "[SAP] Process Parameters",
+				'Prefix'  => "\n",
+				'Indent'    => 1,
+				'Columns'   =>
+				[
+					"Name",
+					"Description",
+					"Value"
+				])
+
+				xmldata = REXML::Document.new(body)
+				xmlpath = '/SOAP-ENV:Envelope/SOAP-ENV:Body/'
+				xmlpath << '/SAPControl:GetProcessParameterResponse'
+				xmlpath << '/parameter/item'
+				xmldata.elements.each(xmlpath) do | ele |
+					if not datastore['MATCH'].empty? and ele.elements["name"].text.match(/#{name_match}/)
+						name = ele.elements["name"].text if not ele.elements["name"].nil?
+						desc = ele.elements["description"].text if not ele.elements["description"].nil?
+						desc = '' if desc.nil?
+						val = ele.elements["value"].text if not ele.elements["value"].nil?
+						val = '' if val.nil?
+						saptbl << [ name, desc, val ]
+					end
+				end
+
+				print_status("[SAP] Process Parameter Results for #{name_match}\n #{saptbl.to_s}") if not saptbl.to_s.empty?
+			end
 
 			return
 

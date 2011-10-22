@@ -126,13 +126,11 @@ class Metasploit4 < Msf::Auxiliary
 		end
 
 		if success
-			print_good("#{rhost}:#{rport} [SAP] Access Point List: #{env.length} entries extracted")
 
 			saptbl = Msf::Ui::Console::Table.new(
 				Msf::Ui::Console::Table::Style::Default,
 			'Header'    => "[SAP] Access Points #{rhost}:#{rport}",
 			'Prefix'  => "\n",
-			'Postfix' => "\n",
 			'Indent'    => 1,
 			'Columns'   =>
 			[
@@ -147,9 +145,15 @@ class Metasploit4 < Msf::Auxiliary
 				saptbl << [ output[0], output[1], output[2], output[3], output[4] ]
 			end
 
-			store_loot("sap.getaccesspointlist", "text/xml", rhost, res.body, ".xml")
+			store_loot(
+				"sap.getaccesspointlist",
+				"text/xml",
+				rhost,
+				res.body,
+				".xml"
+			)
 
-			print_status(saptbl.to_s)
+			print_good("#{rhost}:#{rport} [SAP] Access Point List: #{env.length} entries extracted\n#{saptbl.to_s}")
 			return
 
 		elsif fault
