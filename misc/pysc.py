@@ -10,7 +10,7 @@
 
 	- Remove shellcode from the script to help avoid detection by AV and HIPS systems
 	- Offer a flexible command line based script
-	-,Also provide the ability to run fully automated  as an EXE (by using pyinstaller)
+	- Also provide the ability to run fully automated  as an EXE (by using pyinstaller)
 
 	To this end this prototype script offers the ability to download shellcode from a
 	remote DNS server (using TXT records) or through Internet Explorer (using SSPI to
