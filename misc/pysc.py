@@ -340,16 +340,27 @@ def urlrequest(url, check_url):
         dwBufLen = DWORD(4)
         buff = c_buffer(0x2000)
         bytesRead = DWORD()
-        data = ''
         useragent = 'Mozilla/5.0 PySC'
         method = 'GET'
+        data = ''
 
-        if debug:
-            print '\n [>] Checking URL'
+        # parse url into peices for later use
 
         p_url = urlparse(url)
         path = p_url.path
-        netloc = p_url.netloc
+        netloc = p_url.netloc.split(':')
+        conn_user = p_url.username
+        conn_pass = p_url.password
+
+        if p_url.port:
+            conn_port = p_url.port
+        elif p_url.scheme == 'http':
+            conn_port = 80
+        else:
+            conn_port = 443
+
+        if debug:
+            print '\n [>] Checking URL'
 
         try:
             hInternet = wininet.InternetOpenA(
@@ -365,28 +376,16 @@ def urlrequest(url, check_url):
                     print ' [!] Unable to build connection to %s' % p_url.geturl()
                 raise Exception
 
-            if p_url.scheme == 'http':
-                hConnect = wininet.InternetConnectA(
-                            hInternet,
-                            p_url.netloc,
-                            INTERNET_DEFAULT_HTTP_PORT,
-                            False,
-                            False,
-                            INTERNET_SERVICE_HTTP,
-                            False,
-                            False,
-                            )
-            else:
-                hConnect = wininet.InternetConnectA(
-                            hInternet,
-                            p_url.netloc,
-                            INTERNET_DEFAULT_HTTPS_PORT,
-                            False,
-                            False,
-                            INTERNET_SERVICE_HTTP,
-                            False,
-                            False,
-                            )
+            hConnect = wininet.InternetConnectA(
+                        hInternet,
+                        netloc[0],
+                        conn_port,
+                        conn_user,
+                        conn_pass,
+                        INTERNET_SERVICE_HTTP,
+                        False,
+                        False,
+                        )
 
             if not hConnect:
                 if debug:
@@ -396,7 +395,7 @@ def urlrequest(url, check_url):
             hRequest = wininet.HttpOpenRequestA(
                         hConnect,
                         method,
-                        p_url.path,
+                        path,
                         False,
                         False,
                         False,
