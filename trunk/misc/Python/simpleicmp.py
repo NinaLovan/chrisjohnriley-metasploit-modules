@@ -132,7 +132,6 @@ def run(target, data, timeout, size, options):
         tosend = dpos[:window]
 
         icmpFile = IcmpCreateFile()
-        o = Options()
 
         raddr, status, rtt = IcmpSendEcho(icmpFile, target, tosend, options, timeout)
 
@@ -155,7 +154,6 @@ def run(target, data, timeout, size, options):
         dpos = dpos[window:]
 
     print "\n\t[ ] Finished sending! \n"
-    exit(0)
 
 def div_ceil(a, b):
     if a%b:
@@ -171,11 +169,11 @@ class IPAddr(Structure):
         return inet_ntoa(pack("L", self.S_addr))
 
 def inet_addr(ip):
-        try:
-            return IPAddr(unpack("L", inet_aton(ip))[0])
-        except error, msg:
-            print "\n\t[!] An error has occured ::: %s" % msg
-            exit(1)
+    try:
+        return IPAddr(unpack("L", inet_aton(ip))[0])
+    except error, msg:
+        print "\n\t[!] An error has occured ::: %s" % msg
+        exit(1)
 
 class IP_OPTION_INFORMATION(Structure):
     _fields_ = [ ("Ttl", c_ubyte),
@@ -202,7 +200,7 @@ def IcmpSendEcho(handle, addr, data, options, timeout):
     data = data or ''
     if options:
         options = byref(options)
-    r = icmp.IcmpSendEcho(handle, inet_addr(addr),
+    icmp.IcmpSendEcho(handle, inet_addr(addr),
                             data,
                             len(data),
                             options,
