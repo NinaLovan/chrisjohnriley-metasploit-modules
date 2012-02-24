@@ -29,38 +29,39 @@ kernel32 = windll.kernel32
 wininet = windll.wininet
 
 logo =\
-'''
-                                                   .   ..--. .
-                                                   |   ||   )|
-                                            .--.   |   ||--' |
-                                            `--.   :   ;|  \ |
-                                            `--'____`-' '   `'---'
+'''\n
+\t\t\t\t\t\t          .   ..--. .
+\t\t\t\t\t\t          |   ||   )|
+\t\t\t\t\t\t   .--.   |   ||--' |
+\t\t\t\t\t\t   `--.   :   ;|  \ |
+\t\t\t\t\t\t   `--'____`-' '   `'---'
 
-                                            ------------------------
-                                            | Simple url retriever |
-                                            ------------------------
-                                                    Chris John Riley
-                                                        blog.c22.cc
+\t\t\t\t\t\t   ------------------------
+\t\t\t\t\t\t   | Simple url retriever |
+\t\t\t\t\t\t   ------------------------
+\t\t\t\t\t\t           Chris John Riley
+\t\t\t\t\t\t               blog.c22.cc
 '''
 
 usage = \
 '''
 \tusage:\n
-\t ./simpleurl.py -u <url> -o <outfile> -d
+\t ./simpleurl.py -u <url> -o <outfile> -b <int> -d
 
 \t\t -u <url> / --url=<url> - Specific URL to access
-\t\t -o <file> / --outfile=<file> -[opt:] Output file
+\t\t -o <file> / --outfile=<file> - [opt:] Output file
+\t\t -b <int> / --buffer=<int> - [opt:] Buffer length
 \t\t -d / --display - [opt:] Display retrieved URL
 
 \texample:\n
-\t ./simpleicmp.py -u http://c22.cc -d
+\t ./simpleicmp.py -u http://c22.cc -b 16000 -d
 '''
 
 def main():
 
-    url, outfile, display = setup()
+    url, outfile, display, bufflen = setup()
     checks()
-    contents = urlrequest(url)
+    contents = urlrequest(url, bufflen)
     if display:
         displayurl(contents, url)
     if outfile:
@@ -73,8 +74,8 @@ def setup():
     print logo
 
     if len(argv) > 1:
-        SHORTOPTS = "hu:o:d"
-        LONGOPTS = ("help", "url=", "outfile=", "display")
+        SHORTOPTS = "hu:o:b:d"
+        LONGOPTS = ("help", "url=", "outfile=", "buffer=", "display")
         try:
             (opts, args) = getopt(argv[1:], SHORTOPTS, LONGOPTS)
         except:
@@ -84,6 +85,7 @@ def setup():
         # set defaults
         outfile =''
         display = False
+        bufflen = 0x16000
 
         for (opt, arg) in opts:
             if opt in ('-h', '--help'):
@@ -96,19 +98,33 @@ def setup():
                     url = 'http://' + arg
             elif opt in ('-o', '--outfile'):
                 outfile = arg
+            elif opt in ('-b', '--buffer'):
+                if arg.isdigit():
+                    bufflen = int(arg)
             elif opt in ('-d', '--display'):
                 display = True
 
-        print ' [ ] URL: %s' % url
+        print ' [ ] Target: %s' % url
+        print ' [ ] Buffer: %#x (%d)' % (bufflen, bufflen)
 
         if outfile:
-            print ' [ ] Output will be save as %s' % outfile
-        if display:
-            print ' [ ] Output will be displayed'
-        if not outfile and not display:
-            print ' [!] No output or file selected... running silent!'
+            if path.exists(outfile):
+                print ' [!] Output file "%s" already exists!' % outfile
+                exit(0)
+            else:
+                print ' [ ] File Output: %s' % outfile
+        else:
+            print ' [ ] File Output: Off'
 
-        return url, outfile, display
+        if display:
+            print ' [ ] Display: On'
+        else:
+            print ' [ ] Display: Off'
+
+        if not outfile and not display:
+            print ' [!] Display and file output disabled... running silent'
+
+        return url, outfile, display, bufflen
 
     else:
         print usage
@@ -150,7 +166,7 @@ def check_network():
         print ' [<] Connection check confirmed'
 
 
-def urlrequest(url):
+def urlrequest(url, bufflen):
 
     # attempt to use Internet Explorer (urlmon) to retrieve shellcode from a remote URL
 
@@ -175,7 +191,7 @@ def urlrequest(url):
     dwStatus = DWORD()
     dwBufLen = DWORD(4)
     dwFlags = DWORD()
-    buff = c_buffer(0x2000)
+    buff = c_buffer(bufflen)
     bytesRead = DWORD()
     useragent = 'Mozilla/5.0'
     method = 'GET'
@@ -312,14 +328,17 @@ def urlrequest(url):
         else:
             data = data + buff.raw[:bytesRead.value]
             print ' [<] Reading in response from %s' % p_url.geturl()
-
-        return data
+            print ' [ ] Read %d bytes from %s' % (len(data), p_url.geturl())
+            if len(buff) == len(data):
+                print ' [!] The website appears too large for the buffer %#x (%d)' % (len(buff), len(buff))
 
         # teardown connections
 
         wininet.InternetCloseHandle(hRequest)
         wininet.InternetCloseHandle(hConnect)
         wininet.InternetCloseHandle(hInternet)
+ 
+        return data
 
     except Exception, error:
         print ' [!] Unable to retrieve URL (%s)' % p_url.geturl()
@@ -338,15 +357,11 @@ def displayurl(contents, url):
 
 def saveurl(contents, outfile, url):
 
-    if path.exists(outfile):
-        print ' [!] Output file %s already exists!' % outfile
-        exit(0)
-
     print '\n [>] Saving %d bytes of data from %s to %s' % (len(contents), url, outfile)
     handle = open(outfile, 'w')
     handle.write(contents)
     handle.close()
-    print ' [<] Save complete'
+    print ' [<] Output saved successfully'
 
 
 if __name__ == '__main__':
