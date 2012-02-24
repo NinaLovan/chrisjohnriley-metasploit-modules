@@ -35,16 +35,16 @@ IcmpCloseHandle = icmp.IcmpCloseHandle
 logo =\
 '''
 
-\t\t\t\t\t\t\t\t  _   _   _   _   _   _
-\t\t\t\t\t\t\t\t / \ / \ / \ / \ / \ / \
-\t\t\t\t\t\t\t\t( S | _ | i | c | m | p )
-\t\t\t\t\t\t\t\t \_/ \_/ \_/ \_/ \_/ \_/
+\t\t\t\t\t\t\t  _   _   _   _   _   _
+\t\t\t\t\t\t\t / \ / \ / \ / \ / \ / \ 
+\t\t\t\t\t\t\t( S | _ | i | c | m | p )
+\t\t\t\t\t\t\t \_/ \_/ \_/ \_/ \_/ \_/
 
-\t\t\t\t\t\t\t---------------------------------
-\t\t\t\t\t\t\t| Simple icmp traffic generator |
-\t\t\t\t\t\t\t---------------------------------
-\t\t\t\t\t\t\t\t\t Chris John Riley
-\t\t\t\t\t\t\t\t\t      blog.c22.cc
+\t\t\t\t\t\t---------------------------------
+\t\t\t\t\t\t| Simple icmp traffic generator |
+\t\t\t\t\t\t---------------------------------
+\t\t\t\t\t\t\t\t Chris John Riley
+\t\t\t\t\t\t\t\t      blog.c22.cc
 '''
 
 usage = \
@@ -115,7 +115,11 @@ def setup():
                 else:
                     size = 1450
 
-    return target, data, timeout, size, options
+        return target, data, timeout, size, options
+
+    else:
+        print usage
+        exit(0)
 
 def run(target, data, timeout, size, options):
     ''' send packets '''
