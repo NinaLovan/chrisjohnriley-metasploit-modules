@@ -156,21 +156,23 @@ def dnsworker(dns, proto):
 
     # handle tcp and udp request types
 
-    tcpres = []
-    udpres = []
-    result = []
+    tcpres = {}
+    udpres = {}
+    result = {}
 
     if proto['udp']:
-        udpres.append(dnsrequest(dns, reqtype='udp'))
+        udpres = dict(dnsrequest(dns, reqtype='udp'))
+        print '\t[<] %d TXT records retrieved from %s\n' % (len(udpres), dns)
     if proto['tcp']:
-        tcpres.append(dnsrequest(dns, reqtype='tcp'))
+        tcpres = dict(dnsrequest(dns, reqtype='tcp'))
+        print '\t[<] %d TXT records retrieved from %s\n' % (len(tcpres), dns)
 
     if proto['tcp'] and proto['udp']:
-        result = set(tcpres[0] + udpres[0])
+        result = dict(udpres.items() + tcpres.items())
     elif proto['tcp']:
-        result = set(tcpres[0])
+        result = dict(tcpres.items())
     elif proto['udp']:
-        result = set(udpres[0])
+        result = dict(udpres.items())
 
     return result
 
@@ -195,7 +197,7 @@ def dnsrequest(dns, reqtype):
         class DNS_TXT_DATA(Structure):
             _fields_ = [
                 ('dwStringCount', DWORD),
-                ('pStringArray', LPTSTR * 1),
+                ('pStringArray', LPTSTR * 50),
         ]
 
         class DnsRecord_FLAG_DATA(Union):
@@ -274,21 +276,28 @@ def dnsrequest(dns, reqtype):
             return[]
 
         dnsvalue = precord.contents
-        txtvalues = []
+        txtvalues = {}
+        records = 0
+        ref_iter = 0
+
+        # the following ensures that the records are returned in the order they're received
 
         while True:
             try:
+                ref_iter = ref_iter + records
                 records = dnsvalue.contents.Data.TXT.dwStringCount
                 i = 0
                 while i < records:
-                    txtvalues.append(dnsvalue.contents.Data.TXT.pStringArray[i])
+                    ref = i + ref_iter
+                    if dnsvalue.contents.Data.TXT.pStringArray[i] != None:
+                        txtvalues[ref] = (dnsvalue.contents.Data.TXT.pStringArray[i])
                     i = i +1
                 dnsvalue = dnsvalue.contents.pNext
             except:
                 # No more records
                 break
 
-        return txtvalues
+        return dict(txtvalues)
 
     except Exception, error:
         print '\t[!] Error ::: %s' % error
@@ -298,9 +307,9 @@ def dnsrequest(dns, reqtype):
 def display(txtvalues, dns):
 
     if txtvalues:
-        print '\t[<] %d TXT records retrieved from %s\n' % (len(txtvalues), dns)
-        for entry in txtvalues:
-            print '\t[ ] %s' % entry
+        print '\t[ ] %s TXT records ::: \n' % dns
+        for numb, entry in txtvalues.items():
+            print '\t[%d] %s' % (numb +1, entry)
     else:
         print '\t[!] No TXT records recieved from %s' % dns
 
