@@ -23,7 +23,7 @@ class Metasploit3 < Msf::Auxiliary
             'Description' => %q{
                 Waits for ICMP packet containing set data payload and responds.
             },
-            'Author'      =>     'ChrisJohnRiley',
+            'Author'      =>     'Chris John Riley',
             'License'     =>     MSF_LICENSE,
             'References'    =>
                 [
