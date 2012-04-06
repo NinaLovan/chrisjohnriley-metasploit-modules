@@ -41,8 +41,8 @@ class Metasploit3 < Msf::Auxiliary
         )
 
         register_options([
-            OptString.new('TRIGGER',      [true, 'Trigger to listen for (followed by filename)', '^BOF:']),
-            OptString.new('EOF_TRIGGER',      [true, 'End of File command', '^EOF']),
+            OptString.new('START_TRIGGER',      [true, 'Trigger to listen for (followed by filename)', '^BOF:']),
+            OptString.new('END_TRIGGER',      [true, 'End of File command', '^EOF']),
             OptString.new('RESPONSE',        [true, 'Data to respond when initial trigger matches', 'BEGIN']),
             OptString.new('BPF_FILTER',      [true, 'BFP format filter to listen for', 'icmp']),
             OptString.new('INTERFACE',     [false, 'The name of the interface']),
@@ -63,8 +63,8 @@ class Metasploit3 < Msf::Auxiliary
             @iface_ip = Pcap.lookupaddrs(@interface)[0]
 
             @filter = datastore['BPF_FILTER']
-            @eoftrigger = datastore['EOF_TRIGGER']
-            @trigger = datastore['TRIGGER']
+            @eoftrigger = datastore['END_TRIGGER']
+            @boftrigger = datastore['START_TRIGGER']
             @response = datastore['RESPONSE']
             @promisc = datastore['PROMISC'] || false
             @cloak = datastore['CLOAK'].downcase || 'linux'
@@ -89,14 +89,14 @@ class Metasploit3 < Msf::Auxiliary
     def icmplistener
         # start icmp listener
 
-        print_good("ICMP Listener started on %s (%s). Monitoring for trigger packet containing %s" % [@interface, @iface_ip, @trigger])
+        print_good("ICMP Listener started on %s (%s). Monitoring for trigger packet containing %s" % [@interface, @iface_ip, @boftrigger])
         cap = PacketFu::Capture.new(:iface => @interface, :start => true, :filter => @filter, :promisc => @promisc)
         loop {
             cap.stream.each do |pkt|
                 packet = PacketFu::Packet.parse(pkt)
                 data = packet.payload[4..-1]
 
-                if packet.is_icmp? and data =~ /#{@trigger}/
+                if packet.is_icmp? and data =~ /#{@boftrigger}/
 
                     print_status("#{Time.now}: SRC:%s ICMP (type %d code %d) DST:%s" % [packet.ip_saddr, packet.icmp_type, packet.icmp_code, packet.ip_daddr])
 
@@ -122,7 +122,7 @@ class Metasploit3 < Msf::Auxiliary
                     @record = true
                     @record_host = packet.ip_saddr
                     @record_data = ''
-                    @filename = data[(@trigger.length-1)..-1].strip # set filename from icmp payload
+                    @filename = data[(@boftrigger.length-1)..-1].strip # set filename from icmp payload
 
                     print_good("Beginning capture of %s data" % @filename)
 
