@@ -23,7 +23,8 @@ class Metasploit3 < Msf::Auxiliary
             'Version'     => '$Revision$',
             'Description' => %q{
                 This module is designed to provide listen on a set port for PJL or PostScript print
-                jobs. Once a print job is detected it is saved to disk / loot.
+                jobs. Once a print job is detected it is saved to disk / loot. The captured printjob
+                can then be forwarded on to another printer if required.
             },
             'Author'      =>     'Chris John Riley',
             'License'     =>     MSF_LICENSE,
